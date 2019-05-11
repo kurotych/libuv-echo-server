@@ -9,3 +9,8 @@ cmake ../
 make
 ./echo_server
 ```
+
+for testing can be used command:
+```
+nc -u <IP> <PORT>
+```
