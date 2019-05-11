@@ -7,6 +7,7 @@
 
 uv_loop_t *loop;
 uv_udp_t recv_socket;
+#define SERVER_PORT 8888
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
     (void)handle;
@@ -91,14 +92,15 @@ int main()
     uv_signal_init(loop, &sigint);
     uv_signal_start(&sigkill, on_signal, SIGINT);
 
-
     struct sockaddr_in recv_addr;
-    uv_ip4_addr("0.0.0.0", 8888, &recv_addr);
+    uv_ip4_addr("0.0.0.0", SERVER_PORT, &recv_addr);
 
     uv_udp_init(loop, &recv_socket);
 
     uv_udp_bind(&recv_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
     uv_udp_recv_start(&recv_socket, alloc_buffer, on_read);
 
+    printf("Server listening on: %d", SERVER_PORT);
+    fflush(stdout);
     return uv_run(loop, UV_RUN_DEFAULT);
 }
