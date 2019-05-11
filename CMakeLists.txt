@@ -2,8 +2,9 @@ cmake_minimum_required(VERSION 3.14)
 project(proto_server C)
 
 set(CMAKE_C_STANDARD 11)
+set (CMAKE_C_FLAGS "-Wall -Wextra")
 
-add_executable(proto_server main.c common.h)
+add_executable(proto_server main.c)
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLIB REQUIRED glib-2.0)

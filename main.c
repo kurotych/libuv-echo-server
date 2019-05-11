@@ -9,6 +9,7 @@ uv_loop_t *loop;
 uv_udp_t recv_socket;
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
+    (void)handle;
     buf->base = malloc(suggested_size);
     buf->len = suggested_size;
 }
@@ -22,8 +23,10 @@ static void on_send(uv_udp_send_t* req, int status)
     }
 }
 
-void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const struct sockaddr *addr, unsigned flags) {
-
+void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf,
+    const struct sockaddr *addr, unsigned flags)
+{
+    (void)flags;
     if (nread < 0) {
         fprintf(stderr, "Read error %s\n", uv_err_name(nread));
         uv_close((uv_handle_t*) req, NULL);
@@ -42,11 +45,11 @@ void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const struct soc
     }
 
     free(buf->base);
-  //  uv_udp_recv_stop(req);
 }
 
 static void on_walk_cleanup(uv_handle_t* handle, void* data)
 {
+    (void)data;
     uv_close(handle, NULL);
 }
 
@@ -64,6 +67,7 @@ static void on_server_exit()
 
 static void on_signal(uv_signal_t* signal, int signum)
 {
+    (void)signum;
     printf("on_signal\n");
     if(uv_is_active((uv_handle_t*)&recv_socket)) {
         uv_udp_recv_stop(&recv_socket);
@@ -72,7 +76,8 @@ static void on_signal(uv_signal_t* signal, int signum)
     uv_signal_stop(signal);
 }
 
-int main() {
+int main()
+{
     loop = uv_default_loop();
     uv_signal_t sigkill;
     uv_signal_init(loop, &sigkill);
