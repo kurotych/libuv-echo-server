@@ -45,20 +45,6 @@ void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf, const struct soc
   //  uv_udp_recv_stop(req);
 }
 
-
-static void on_signal(uv_signal_t* signal, int signum)
-{
-    printf("ON SIGNAL\n");
-//    if(uv_is_active((uv_handle_t*)&g_handler)) {
-//        uv_udp_recv_stop(&g_handler);
-//    }
-//    uv_close((uv_handle_t*) &g_handler, on_close);
-    uv_signal_stop(signal);
-    uv_loop_close(loop);
-    uv_loop_delete(loop);
-    exit(0);
-}
-
 static void on_walk_cleanup(uv_handle_t* handle, void* data)
 {
     uv_close(handle, NULL);
@@ -66,18 +52,24 @@ static void on_walk_cleanup(uv_handle_t* handle, void* data)
 
 static void on_server_exit()
 {
+    printf("on_server_exit\n");
+    // clean all stuff
     uv_stop(uv_default_loop());
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
     uv_walk(uv_default_loop(), on_walk_cleanup, NULL);
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
     uv_loop_close(uv_default_loop());
+    exit(0);
 }
 
-static void add_signal_cb(int signum, void (*cb) (uv_signal_t*,int))
+static void on_signal(uv_signal_t* signal, int signum)
 {
-    uv_signal_t sig;
-    uv_signal_init(loop, &sig);
-    uv_signal_start(&sig, cb, signum);
+    printf("on_signal\n");
+    if(uv_is_active((uv_handle_t*)&recv_socket)) {
+        uv_udp_recv_stop(&recv_socket);
+    }
+    uv_close((uv_handle_t*) &recv_socket, on_server_exit);
+    uv_signal_stop(signal);
 }
 
 int main() {
@@ -85,7 +77,6 @@ int main() {
     uv_signal_t sigkill;
     uv_signal_init(loop, &sigkill);
     uv_signal_start(&sigkill, on_signal, SIGKILL);
-
 
     uv_signal_t sigterm;
     uv_signal_init(loop, &sigterm);
@@ -104,6 +95,5 @@ int main() {
     uv_udp_bind(&recv_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
     uv_udp_recv_start(&recv_socket, alloc_buffer, on_read);
 
-    on_server_exit();
-  //  return uv_run(loop, UV_RUN_DEFAULT);
+    return uv_run(loop, UV_RUN_DEFAULT);
 }
