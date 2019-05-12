@@ -13,8 +13,3 @@ make
 By default listening ports:
 - TCP 8888
 - UDP 9999
-
-for testing can be used command:
-```
-nc -u <IP> <PORT>
-```
