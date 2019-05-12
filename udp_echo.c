@@ -1,7 +1,7 @@
 #include "udp_echo.h"
 #include <stdlib.h>
 
-/// called after the data was sent
+// called after the data was sent
 static void on_send(uv_udp_send_t* req, int status)
 {
     free(req);
@@ -10,7 +10,7 @@ static void on_send(uv_udp_send_t* req, int status)
     }
 }
 
-void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf,
+static void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf,
              const struct sockaddr *addr, unsigned flags)
 {
     (void)flags;
@@ -34,7 +34,8 @@ void on_read(uv_udp_t *req, ssize_t nread, const uv_buf_t *buf,
     free(buf->base);
 }
 
-void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
+static void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf)
+{
     (void)handle;
     buf->base = malloc(suggested_size);
     buf->len = suggested_size;
