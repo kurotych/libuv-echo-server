@@ -80,7 +80,7 @@ static void on_signal(uv_signal_t* signal, int signum)
     uv_signal_stop(signal);
 }
 
-static int init_udp_server(uv_loop_t *loop, const char* address, uint16_t port)
+static inline void init_udp_server(uv_loop_t *loop, const char* address, uint16_t port)
 {
     struct sockaddr_in recv_addr;
     uv_ip4_addr(address, port, &recv_addr);
@@ -91,21 +91,22 @@ static int init_udp_server(uv_loop_t *loop, const char* address, uint16_t port)
     uv_udp_recv_start(&recv_socket, alloc_buffer, on_read);
 }
 
+static inline void init_signal(uv_signal_t* signal, int signum)
+{
+    uv_signal_init(loop, signal);
+    uv_signal_start(signal, on_signal, signum);
+}
 
 int main(int argc, const char** argv)
 {
+    (void)argc; (void) argv;
     loop = uv_default_loop();
-    uv_signal_t sigkill;
-    uv_signal_init(loop, &sigkill);
-    uv_signal_start(&sigkill, on_signal, SIGKILL);
 
-    uv_signal_t sigterm;
-    uv_signal_init(loop, &sigterm);
-    uv_signal_start(&sigkill, on_signal, SIGTERM);
+    uv_signal_t sigkill, sigterm, sigint;
+    init_signal(&sigkill, SIGKILL);
 
-    uv_signal_t sigint;
-    uv_signal_init(loop, &sigint);
-    uv_signal_start(&sigkill, on_signal, SIGINT);
+    init_signal(&sigterm, SIGTERM);
+    init_signal(&sigint, SIGINT);
 
     init_udp_server(loop, "0.0.0.0", SERVER_PORT);
 
