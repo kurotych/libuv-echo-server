@@ -7,7 +7,7 @@
 
 #define SERVER_PORT 8888
 
-uv_udp_t* udp_socket;
+static uv_udp_t* udp_socket = NULL;
 
 static void on_walk_cleanup(uv_handle_t* handle, void* data)
 {
@@ -24,6 +24,7 @@ static void on_server_exit()
     uv_walk(uv_default_loop(), on_walk_cleanup, NULL);
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
     uv_loop_close(uv_default_loop());
+    free(udp_socket);
     exit(0);
 }
 

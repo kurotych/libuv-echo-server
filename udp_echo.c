@@ -1,8 +1,6 @@
 #include "udp_echo.h"
 #include <stdlib.h>
 
-uv_udp_t recv_socket;
-
 /// called after the data was sent
 static void on_send(uv_udp_send_t* req, int status)
 {
@@ -44,12 +42,13 @@ void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
 
 uv_udp_t* init_echo_udp_server(uv_loop_t *loop, const char* address, uint16_t port)
 {
+    uv_udp_t *recv_socket = malloc(sizeof(uv_udp_t));
     struct sockaddr_in recv_addr;
     uv_ip4_addr(address, port, &recv_addr);
 
-    uv_udp_init(loop, &recv_socket);
+    uv_udp_init(loop, recv_socket);
 
-    uv_udp_bind(&recv_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
-    uv_udp_recv_start(&recv_socket, alloc_buffer, on_read);
-    return &recv_socket;
+    uv_udp_bind(recv_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
+    uv_udp_recv_start(recv_socket, alloc_buffer, on_read);
+    return recv_socket;
 }
