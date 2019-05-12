@@ -1,8 +1,4 @@
-#include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <uv.h>
 #include "udp_echo.h"
 
 #define SERVER_PORT 8888
