@@ -2,12 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <uv.h>
+
+#define SERVER_PORT 8888
+/// backlog queue – the maximum length of queued connections
+/// for tcp connection
+#define DEFAULT_BACKLOG 10000
 
 uv_loop_t *loop;
 uv_udp_t recv_socket;
-#define SERVER_PORT 8888
 
 void alloc_buffer(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf) {
     (void)handle;
@@ -77,7 +80,19 @@ static void on_signal(uv_signal_t* signal, int signum)
     uv_signal_stop(signal);
 }
 
-int main()
+static int init_udp_server(uv_loop_t *loop, const char* address, uint16_t port)
+{
+    struct sockaddr_in recv_addr;
+    uv_ip4_addr(address, port, &recv_addr);
+
+    uv_udp_init(loop, &recv_socket);
+
+    uv_udp_bind(&recv_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
+    uv_udp_recv_start(&recv_socket, alloc_buffer, on_read);
+}
+
+
+int main(int argc, const char** argv)
 {
     loop = uv_default_loop();
     uv_signal_t sigkill;
@@ -92,15 +107,9 @@ int main()
     uv_signal_init(loop, &sigint);
     uv_signal_start(&sigkill, on_signal, SIGINT);
 
-    struct sockaddr_in recv_addr;
-    uv_ip4_addr("0.0.0.0", SERVER_PORT, &recv_addr);
+    init_udp_server(loop, "0.0.0.0", SERVER_PORT);
 
-    uv_udp_init(loop, &recv_socket);
-
-    uv_udp_bind(&recv_socket, (const struct sockaddr *)&recv_addr, UV_UDP_REUSEADDR);
-    uv_udp_recv_start(&recv_socket, alloc_buffer, on_read);
-
-    printf("Server listening on: %d", SERVER_PORT);
+    printf("Server listening on: %d\n", SERVER_PORT);
     fflush(stdout);
     return uv_run(loop, UV_RUN_DEFAULT);
 }
