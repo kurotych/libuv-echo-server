@@ -1,0 +1,15 @@
+language: c
+compiler: gcc
+dist: xenial
+notifications:
+  email: false
+
+script:
+    - mkdir build && cd build 
+    - cmake ../
+    - make
+
+addons:
+  apt:
+    packages:
+    - libuv1-dev
