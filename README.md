@@ -14,3 +14,5 @@ make
 By default listening ports:
 - TCP 8888
 - UDP 9999
+
+> libuv version: 1.22.0
